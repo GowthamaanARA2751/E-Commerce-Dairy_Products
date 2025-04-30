@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+    Buy_Now
+{% endblock title %}
+
+{% block main-content %}
+<div class="container">
+    {% if messages %}
+        {% for msg in messages %}
+            <div class="alert alert-danger" role='alert'>{{ msg }}</div>
+        {% endfor %}
+    {% endif %}
+    <div class="row mt-5">
+        <div class="col-sm-6">
+            <h4>Order Summary</h4>
+            <hr>
+            {% for item in cart_items %}
+                <div class="card mb-2">
+                    <div class="card-body">
+                        <h5>Product: {{ item.product.title }}</h5>
+                        <p>Quantity: {{ item.quantity }}</p>
+                        <p class="fw-bold">Price: ₹{{ item.product.discounted_price }}</p>
+                    </div>
+                </div>
+            {% endfor %}
+            <p class="fw-bold">Total Cost + Rs. 40 = ₹{{ totalamount }}</p>
+            <small>Lorem ipsum dolor sit amet consectetur...</small>
+        </div>
+
+        <div class="col-sm-4 offset-sm-1">
+            <h4>Select Shipping Address</h4>
+            <hr>
+            <form id="myform">
+                {% csrf_token %}
+                {% for ad in add %}
+                    <div class="card mb-2">
+                        <div class="card-body">
+                            <h5>{{ ad.name }}</h5>
+                            <p>Mobile: {{ ad.mobile }}</p>
+                            <p>{{ ad.locality }} {{ ad.city }} {{ ad.state }} - {{ ad.zipcode }}</p>
+                        </div>
+                    </div>
+                    <div class="form-check mb-3">
+                        <input type="radio" name="custid" class="form-check-input" value="{{ ad.id }}">
+                        <label class="form-check-label fw-bold">Address {{ forloop.counter }}</label>
+                    </div>
+                {% endfor %}
+                <div class="form-check">
+                    <label for="totalamount" class="form-label">Total Amount</label>
+                    <input type="number" class="form-control" name="totalamount" value="{{ totalamount }}" readonly>
+                </div>
+                <div class="text-end">
+                    <button id="rzp-button1" type="button" class="btn btn-warning mt-2 px-5 fw-bold">Pay Now</button>
+                </div>
+            </form>
+
+            <!-- Hidden form for final payment submission -->
+            <form id="payment-done-form" action="{% url 'paymentdone' %}" method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="order_id" id="order_id">
+                <input type="hidden" name="payment_id" id="payment_id">
+                <input type="hidden" name="cust_id" id="cust_id">
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock main-content %}
+
+{% block payment-gateway %}
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+    document.getElementById('rzp-button1').onclick = function (e) {
+        e.preventDefault();
+
+        const custid = document.querySelector('input[name="custid"]:checked');
+        if (!custid) {
+            alert("Please select a shipping address.");
+            return;
+        }
+
+        var options = {
+            "key": "{{ razorpay_merchant_key }}",
+            "amount": "{{ razoramount|safe }}",
+            "currency": "INR",
+            "name": "Neel",
+            "description": "Purchase Product",
+            "order_id": "{{ razorpay_order_id|safe }}",
+            "handler": function (response) {
+                document.getElementById("order_id").value = response.razorpay_order_id;
+                document.getElementById("payment_id").value = response.razorpay_payment_id;
+                document.getElementById("cust_id").value = custid.value;
+                document.getElementById("payment-done-form").submit();
+            },
+            "theme": { "color": "#0d6efd" }
+        };
+
+        var rzp1 = new Razorpay(options);
+        rzp1.open();
+
+        rzp1.on('payment.failed', function (response) {
+            alert("Payment Failed: " + response.error.description);
+        });
+    };
+</script>
+{% endblock payment-gateway %}
+
