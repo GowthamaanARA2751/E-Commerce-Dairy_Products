@@ -23,7 +23,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-@g8@y_6=s(3o4gkeso=iz&g+iz@f@fzid^^*qivn*g_^)^!j*h'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
@@ -131,9 +131,6 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-RAZOR_KEY_ID='rzp_test_MD1WyRpcFaeTS2'
-RAZOR_KEY_SECRET='tnAAtofjJ8vBXjh87NflASvM'
 
 CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_SECURE = True
